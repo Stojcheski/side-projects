@@ -32,7 +32,7 @@ jobs:
     
     steps:
       # Step 1: Setup the environment
-      - name: '🔧 Setup Environment'
+      - name: 'Setup Environment'
         run: |
           echo "Starting deployment pipeline for commit: ${{ github.sha }}"
           echo "Triggered by: ${{ github.actor }}"
@@ -53,7 +53,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
+          # Remove cache since we don't have package-lock.json in this repo yet
 
       # Step 4: Install Salesforce CLI
       # We use the modern SF CLI instead of the legacy SFDX CLI
@@ -151,7 +151,7 @@ jobs:
             exit 1
           }
           
-          echo "✅ Code formatting check passed"
+          echo "Code formatting check passed"
 
       # Step 11: Static Code Analysis
       # Run Salesforce Code Analyzer to detect code quality issues
@@ -288,14 +288,14 @@ jobs:
             
             echo "Destructive changes processed"
           else
-            echo "ℹNo destructive changes detected"
+            echo "No destructive changes detected"
           fi
 
       # Step 17: Cleanup sensitive files
       - name: 'Cleanup'
         if: always()
         run: |
-          echo "🧹 Cleaning up temporary files..."
+          echo "Cleaning up temporary files..."
           rm -f ./authfile.txt
           echo "Cleanup completed"
 
