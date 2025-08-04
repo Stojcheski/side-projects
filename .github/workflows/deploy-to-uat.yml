@@ -68,13 +68,16 @@ jobs:
       - name: 'Install CLI Plugins'
         run: |
           echo "Installing sfdx-git-delta for delta deployments..."
-          sf plugins install sfdx-git-delta
+          sf plugins install sfdx-git-delta --force
           
           echo "Installing Salesforce Code Analyzer for static analysis..."
-          sf plugins install @salesforce/sfdx-scanner
+          sf plugins install @salesforce/sfdx-scanner --force
           
           echo "Installed plugins:"
-          sf plugins --core
+          sf plugins
+          
+          echo "Verifying sfdx-git-delta commands:"
+          sf sgd --help || echo "sgd command not found, trying alternative..."
 
       # Step 6: Create authentication file
       # We store the auth URL in a temporary file for security
@@ -103,13 +106,14 @@ jobs:
           # Create directory for delta deployment
           mkdir delta-deploy
           
-          # Generate delta package comparing current commit with previous commit
-          # --from HEAD~1: Previous commit
-          # --to HEAD: Current commit  
-          # --output: Where to store the delta package
-          # --generate-delta: Create package.xml for changed metadata
-          # --source: Source directory to analyze
-          sf sgd source delta --from "HEAD~1" --to "HEAD" --output ./delta-deploy --generate-delta --source force-app/
+          # Try the SF CLI command first, fall back to legacy if needed
+          if sf sgd source delta --help > /dev/null 2>&1; then
+            echo "Using sf sgd command..."
+            sf sgd source delta --from "HEAD~1" --to "HEAD" --output ./delta-deploy --generate-delta --source force-app/
+          else
+            echo "SF SGD not available, using legacy sfdx command..."
+            npx sfdx sgd:source:delta --from "HEAD~1" --to "HEAD" --output ./delta-deploy --generate-delta --source force-app/
+          fi
           
           echo "Delta package contents:"
           if [ -d "./delta-deploy/force-app" ]; then
