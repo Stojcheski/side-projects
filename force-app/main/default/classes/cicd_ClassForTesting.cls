@@ -12,4 +12,5 @@ public with sharing class cicd_ClassForTesting {
     public static Boolean isTestingPipeline() {
         return true;
     }
+    // Testing fixed CI/CD workflow - second attempt
 }
