@@ -31,7 +31,8 @@ jobs:
           npm install @salesforce/cli -g
           sf --version
           sf plugins install @salesforce/sfdx-scanner
-          sf plugins install sfdx-git-delta
+          echo "y" | sf plugins install sfdx-git-delta
+          sf plugins --core
 
       - name: Run Code Formatting Check
         run: npm run prettier:verify
@@ -47,7 +48,7 @@ jobs:
       - name: Create delta package for validation
         run: |
           mkdir changed-sources
-          npx sfdx sgd:source:delta --to "HEAD" --from "origin/develop" --output changed-sources/ --generate-delta --source force-app/
+          sf sgd:source:delta --to "HEAD" --from "origin/develop" --output changed-sources/ --generate-delta --source force-app/
 
       - name: Run SFDX Scanner on changed files
         run: |
