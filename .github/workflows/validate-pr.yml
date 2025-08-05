@@ -37,7 +37,12 @@ jobs:
         run: npm run prettier:verify
 
       - name: Run ESLint
-        run: npm run lint
+        run: |
+          if find ./changed-sources -path "*/aura/**/*.js" -o -path "*/lwc/**/*.js" 2>/dev/null | grep -q .; then
+            npm run lint
+          else
+            echo "No Aura or LWC JavaScript files found in changes"
+          fi
 
       - name: Create delta package for validation
         run: |
@@ -46,14 +51,14 @@ jobs:
 
       - name: Run SFDX Scanner on changed files
         run: |
-          if [ -d "changed-sources/force-app" ]; then
+          if find ./changed-sources -name "*.cls" -o -name "*.trigger" 2>/dev/null | grep -q .; then
             sf scanner run --format sarif --target './changed-sources/force-app/**/*.cls,./changed-sources/force-app/**/*.trigger' \
               --category "Design,Best Practices,Performance,Security" \
               --outfile 'apexScanResults.sarif' \
               --severity-threshold 3
             echo "SARIF_EXISTS=true" >> $GITHUB_ENV
           else
-            echo "No Apex classes or triggers to scan"
+            echo "No Apex classes or triggers found to scan"
             echo "SARIF_EXISTS=false" >> $GITHUB_ENV
           fi
 
@@ -70,14 +75,14 @@ jobs:
 
       - name: Validate deployment to UAT (dry-run)
         run: |
-          if [ -d "changed-sources/force-app" ]; then
+          if [ -d "changed-sources/force-app" ] && find ./changed-sources -name "*.xml" -o -name "*.cls" -o -name "*.trigger" -o -name "*.js" -o -name "*.html" -o -name "*.css" 2>/dev/null | grep -q .; then
             sf project deploy start --source-dir ./changed-sources/force-app \
               --target-org uatorg \
               --dry-run \
               --test-level RunLocalTests \
               --verbose
           else
-            echo "No changes to validate"
+            echo "No deployable metadata changes found to validate"
           fi
 
       - name: Clean up auth file
