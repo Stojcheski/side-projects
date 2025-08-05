@@ -106,14 +106,9 @@ jobs:
           # Create directory for delta deployment
           mkdir delta-deploy
           
-          # Try the SF CLI command first, fall back to legacy if needed
-          if sf sgd source delta --help > /dev/null 2>&1; then
-            echo "Using sf sgd command..."
-            sf sgd source delta --from "HEAD~1" --to "HEAD" --output ./delta-deploy --generate-delta --source force-app/
-          else
-            echo "SF SGD not available, using legacy sfdx command..."
-            npx sfdx sgd:source:delta --from "HEAD~1" --to "HEAD" --output ./delta-deploy --generate-delta --source force-app/
-          fi
+          # Use the correct sfdx command for git delta
+          echo "Using sfdx sgd:source:delta command..."
+          npx sfdx sgd:source:delta --from "HEAD~1" --to "HEAD" --output ./delta-deploy --generate-delta --source force-app/
           
           echo "Delta package contents:"
           if [ -d "./delta-deploy/force-app" ]; then
