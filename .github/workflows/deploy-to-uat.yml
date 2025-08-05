@@ -56,7 +56,7 @@ jobs:
           # Remove cache since we don't have package-lock.json in this repo yet
 
       # Step 4: Install Salesforce CLI
-      # We use the modern SF CLI instead of the legacy SFDX CLI
+      # We use the modern SF CLI
       - name: 'Install Salesforce CLI'
         run: |
           echo "Installing Salesforce CLI..."
@@ -77,7 +77,7 @@ jobs:
           sf plugins
           
           echo "Verifying sfdx-git-delta commands:"
-          sf sgd --help || echo "sgd command not found, trying alternative..."
+          sf sgd:source:delta --help
 
       # Step 6: Create authentication file
       # We store the auth URL in a temporary file for security
@@ -106,9 +106,9 @@ jobs:
           # Create directory for delta deployment
           mkdir delta-deploy
           
-          # Use the correct sfdx command for git delta
-          echo "Using sfdx sgd:source:delta command..."
-          npx sfdx sgd:source:delta --from "HEAD~1" --to "HEAD" --output ./delta-deploy --generate-delta --source force-app/
+          # Use the correct modern SF CLI command for git delta (with colon syntax)
+          echo "Using sf sgd:source:delta command..."
+          sf sgd:source:delta --to "HEAD" --from "HEAD^" --output ./delta-deploy --generate-delta --source force-app/
           
           echo "Delta package contents:"
           if [ -d "./delta-deploy/force-app" ]; then
