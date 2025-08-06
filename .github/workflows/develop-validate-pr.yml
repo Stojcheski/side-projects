@@ -1,4 +1,4 @@
-﻿name: PR Validation
+﻿name: PR Validation - develop branch
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  validate-pr-request:
+  validate-develop-pr-request:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -31,24 +31,24 @@ jobs:
           npm install @salesforce/cli -g
           sf --version
           sf plugins install @salesforce/sfdx-scanner
-          sf plugins install sfdx-git-delta
+          echo "y" | sf plugins install sfdx-git-delta
+          sf plugins --core
 
       - name: Run Code Formatting Check
         run: npm run prettier:verify
 
+      - name: Create delta package for validation
+        run: |
+          mkdir changed-sources
+          sf sgd:source:delta --to "HEAD" --from "origin/develop" --output changed-sources/ --generate-delta --source force-app/
       - name: Run ESLint
         run: |
           if find ./changed-sources -path "*/aura/**/*.js" -o -path "*/lwc/**/*.js" 2>/dev/null | grep -q .; then
             npm run lint
+            echo "Found LWC/Aura files to lint"
           else
             echo "No Aura or LWC JavaScript files found in changes"
           fi
-
-      - name: Create delta package for validation
-        run: |
-          mkdir changed-sources
-          npx sfdx sgd:source:delta --to "HEAD" --from "origin/develop" --output changed-sources/ --generate-delta --source force-app/
-
       - name: Run SFDX Scanner on changed files
         run: |
           if find ./changed-sources -name "*.cls" -o -name "*.trigger" 2>/dev/null | grep -q .; then
@@ -57,27 +57,25 @@ jobs:
               --outfile 'apexScanResults.sarif' \
               --severity-threshold 3
             echo "SARIF_EXISTS=true" >> $GITHUB_ENV
+            echo "Found Apex files to scan"
           else
             echo "No Apex classes or triggers found to scan"
             echo "SARIF_EXISTS=false" >> $GITHUB_ENV
           fi
-
       - name: Upload SARIF file for GitHub Security
         uses: github/codeql-action/upload-sarif@v3
         if: env.SARIF_EXISTS == 'true'
         with:
           sarif_file: apexScanResults.sarif
-
       - name: Authenticate to UAT Org
         run: |
           echo "${{ secrets.SF_UAT_AUTH_URL }}" > ./authfile.txt
-          sf org login sfdx-url --sfdx-url-file ./authfile.txt --alias uatorg
-
+          sf org login sfdx-url --sfdx-url-file ./authfile.txt --alias ZRG_Partners_UAT
       - name: Validate deployment to UAT (dry-run)
         run: |
           if [ -d "changed-sources/force-app" ] && find ./changed-sources -name "*.xml" -o -name "*.cls" -o -name "*.trigger" -o -name "*.js" -o -name "*.html" -o -name "*.css" 2>/dev/null | grep -q .; then
             sf project deploy start --source-dir ./changed-sources/force-app \
-              --target-org ZRG_Partners_IAT \
+              --target-org ZRG_Partners_UAT \
               --dry-run \
               --test-level RunLocalTests \
               --verbose

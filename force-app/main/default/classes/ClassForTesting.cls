@@ -1,6 +1,10 @@
-public with sharing class cicd_ClassForTesting {
+/**
+ * @description Hello World
+ */
+public with sharing class ClassForTesting {
   /**
-   * Test method to verify CI/CD pipeline
+   * @description Test method to verify CI/CD pipeline
+   * @return String 'CI/CD Pipeline Test'
    */
   public static String getTestMessage() {
     return 'CI/CD Pipeline Test';
@@ -8,6 +12,10 @@ public with sharing class cicd_ClassForTesting {
 
   /**
    * Test method with proper coverage
+   */
+  /**
+   * @description Test method to verify CI/CD pipeline - boolean
+   * @return Boolean true
    */
   public static Boolean isTestingPipeline() {
     return true;
@@ -24,5 +32,9 @@ public with sharing class cicd_ClassForTesting {
   // Testing with correct auth URL - eleventh attempt
   // Testing with correct auth URL - twelveth attempt
   // Testing with correct auth URL - 13 attempt
+
   // Testing with correct auth URL - 14 attempt
+  // Testing with correct auth URL - 15 attempt
+
+  // Testing with correct auth URL - 16                               attempt
 }
