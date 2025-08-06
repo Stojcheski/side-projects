@@ -70,7 +70,7 @@ jobs:
       - name: Authenticate to PROD Org
         run: |
           echo "${{ secrets.SF_PROD_AUTH_URL }}" > ./authfile.txt
-          sf org login sfdx-url --sfdx-url-file ./authfile.txt --alias uatorg
+          sf org login sfdx-url --sfdx-url-file ./authfile.txt --alias ZRG_Partners_PROD
       - name: Validate deployment to PROD (dry-run)
         run: |
           if [ -d "changed-sources/force-app" ] && find ./changed-sources -name "*.xml" -o -name "*.cls" -o -name "*.trigger" -o -name "*.js" -o -name "*.html" -o -name "*.css" 2>/dev/null | grep -q .; then
